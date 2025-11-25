@@ -1,37 +1,41 @@
 import requests
 import json
-import time  # 시간 관련 기능 추가
-import datetime
+import os
 
-# --- 무한 반복 시작 ---
-while True:
-    try:
-        print(f"\n[ {datetime.datetime.now()} ] 데이터 업데이트 시작...")
 
-        # 1. 아까 짠 코드 내용 그대로...
-        url = "https://www.thelog.co.kr/api/common/getCommonState.do?gameDataType=S"
-        headers = { "User-Agent": "Mozilla/5.0..." } # (아까 그 헤더 내용)
+# 1. API 주소
+url = "https://www.thelog.co.kr/api/common/getCommonState.do?gameDataType=S"
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+    "Referer": "https://www.thelog.co.kr/index.do"
+}
+
+try:
+    print("데이터 요청 중...")
+    
+    # 2. 데이터 가져오기
+    response = requests.get(url, headers=headers)
+    data = response.json()
+    rank_list = data.get('gameRank', [])
+
+    print(f"총 {len(rank_list)}개의 게임 순위를 찾았습니다.")
+    
+    # 3. 필요한 정보만 골라내기 (1위~20위)
+    clean_data = []
+    for item in rank_list[:20]:
+        clean_data.append({
+            "rank": item['gameRank'],       
+            "name": item['gameName'],       
+            "share": item['gameShares'],    
+            "updown": item['gameRankUpDown'] 
+        })
+
+    # 4. JSON 파일 저장
+    with open('game_data.json', 'w', encoding='utf-8') as f:
+        json.dump(clean_data, f, ensure_ascii=False, indent=4)
         
-        response = requests.get(url, headers=headers)
-        data = response.json()
-        rank_list = data.get('gameRank', [])
+    print("✅ 업데이트 완료! (프로그램 종료)")
 
-        clean_data = []
-        for item in rank_list[:20]:
-            clean_data.append({
-                "rank": item['gameRank'],       
-                "name": item['gameName'],       
-                "share": item['gameShares'],    
-                "updown": item['gameRankUpDown'] 
-            })
-
-        with open('game_data.json', 'w', encoding='utf-8') as f:
-            json.dump(clean_data, f, ensure_ascii=False, indent=4)
-            
-        print("✅ 업데이트 완료! 24시간 뒤에 다시 실행됩니다.")
-
-    except Exception as e:
-        print(f"❌ 에러 발생: {e}")
-
-    # 2. 24시간(86400초) 동안 잠자기 (대기)
-    time.sleep(86400)
+except Exception as e:
+    print(f"❌ 에러 발생: {e}")
+    exit(1) # 에러나면 깃허브한테 '실패했다'고 알려줌
