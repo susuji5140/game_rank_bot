@@ -2,7 +2,6 @@ import requests
 import json
 import os
 
-
 # 1. API 주소
 url = "https://www.thelog.co.kr/api/common/getCommonState.do?gameDataType=S"
 headers = {
@@ -34,8 +33,8 @@ try:
     with open('game_data.json', 'w', encoding='utf-8') as f:
         json.dump(clean_data, f, ensure_ascii=False, indent=4)
         
-    print("✅ 업데이트 완료! (프로그램 종료)")
+    print("✅ 업데이트 완료!")
 
 except Exception as e:
     print(f"❌ 에러 발생: {e}")
-    exit(1) # 에러나면 깃허브한테 '실패했다'고 알려줌
+    exit(1)
